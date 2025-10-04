@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherNow - Real-time Weather Information</title>
+    <link rel="stylesheet" href="2nd_project.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>⛅</span>
+                <span>WeatherNow</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#forecast">Forecast</a></li>
+                    <li><a href="#maps">Maps</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Search Section -->
+        <div class="search">
+            <div class="srch">
+                <input type="search" placeholder="Search for a city..." spellcheck="false" autocomplete="off">
+                <button aria-label="Search weather">Search</button>
+            </div>
+            
+            <div class="error">
+                <p>❌ City not found. Please try again.</p>
+            </div>
+
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #718096;">Loading weather data...</p>
+            </div>
+
+            <!-- Weather Display -->
+            <div class="weather">
+                <div class="weather-main">
+                    <div class="weather-icon-container">
+                        <img src="https://th.bing.com/th/id/OIP.r22tIgFaIoPJoKmd49RHRQHaHa?w=165&h=180&c=7&r=0&o=5&pid=1.7" class="weather-icon" alt="Weather icon">
+                    </div>
+                    <div class="weather-info">
+                        <h2 class="city">Bengalore</h2>
+                        <p class="weather-description">Clear Sky</p>
+                        <h1 class="temp">22<span class="temp-unit">°C</span></h1>
+                        <p class="feels-like">Feels like <span class="feels-like-temp">20°C</span></p>
+                    </div>
+                </div>
+
+                <!-- Weather Details -->
+                <div class="details">
+                    <div class="detail-card">
+                        <div class="detail-icon">💧</div>
+                        <div class="detail-value humid">50%</div>
+                        <div class="detail-label">Humidity</div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">💨</div>
+                        <div class="detail-value wind">15 km/h</div>
+                        <div class="detail-label">Wind Speed</div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">🌡️</div>
+                        <div class="detail-value pressure">1013 hPa</div>
+                        <div class="detail-label">Pressure</div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">👁️</div>
+                        <div class="detail-value visibility">10 km</div>
+                        <div class="detail-label">Visibility</div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="additional-info">
+                    <div class="info-item">
+                        <span class="info-label">Min Temp</span>
+                        <span class="info-value temp-min">18°C</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Max Temp</span>
+                        <span class="info-value temp-max">25°C</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Sunrise</span>
+                        <span class="info-value sunrise">6:30 AM</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Sunset</span>
+                        <span class="info-value sunset">6:45 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>WeatherNow</strong> - Your trusted weather companion</p>
+            <p>Data provided by OpenWeatherMap API</p>
+            <ul class="footer-links">
+                <li><a href="#privacy">Privacy Policy</a></li>
+                <li><a href="#terms">Terms of Service</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ul>
+        </div>
+    </footer>
+<script>
+    const apikey = "394ad430957b96a372f0a97e716b00c6";
+    const apiurl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+
+    const searchbox = document.querySelector(".search input");
+    const searchbtn = document.querySelector(".search button");
+    const weatherIcon = document.querySelector(".weather-icon");
+    const loadingDiv = document.querySelector(".loading");
+    const errorDiv = document.querySelector(".error");
+    const weatherDiv = document.querySelector(".weather");
+
+    // Function to convert Unix timestamp to readable time
+    function formatTime(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    async function checkWeather(city) {
+        if (!city.trim()) {
+            errorDiv.querySelector("p").textContent = "⚠️ Please enter a city name";
+            errorDiv.style.display = "block";
+            weatherDiv.style.display = "none";
+            return;
+        }
+
+        // Show loading state
+        loadingDiv.style.display = "block";
+        errorDiv.style.display = "none";
+        weatherDiv.style.display = "none";
+
+        try {
+            const response = await fetch(apiurl + city + `&appid=${apikey}`);
+            
+            if (response.status === 404) {
+                loadingDiv.style.display = "none";
+                errorDiv.querySelector("p").textContent = "❌ City not found. Please try again.";
+                errorDiv.style.display = "block";
+                weatherDiv.style.display = "none";
+                return;
+            }
+
+            const data = await response.json();
+            
+            // Update weather information
+            document.querySelector(".city").textContent = data.name + ", " + data.sys.country;
+            document.querySelector(".weather-description").textContent = data.weather[0].description;
+            document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + '<span class="temp-unit">°C</span>';
+            document.querySelector(".feels-like-temp").textContent = Math.round(data.main.feels_like) + "°C";
+            
+            // Update detail cards
+            document.querySelector(".humid").textContent = data.main.humidity + "%";
+            document.querySelector(".wind").textContent = data.wind.speed + " km/h";
+            document.querySelector(".pressure").textContent = data.main.pressure + " hPa";
+            document.querySelector(".visibility").textContent = (data.visibility / 1000).toFixed(1) + " km";
+            
+            // Update additional info
+            document.querySelector(".temp-min").textContent = Math.round(data.main.temp_min) + "°C";
+            document.querySelector(".temp-max").textContent = Math.round(data.main.temp_max) + "°C";
+            document.querySelector(".sunrise").textContent = formatTime(data.sys.sunrise);
+            document.querySelector(".sunset").textContent = formatTime(data.sys.sunset);
+            
+            // Update weather icon based on conditions
+            const weatherCondition = data.weather[0].main;
+            const iconMap = {
+                "Clouds": "https://th.bing.com/th/id/OIP.x1tKL8oOfwSjNZLcrPdAdQHaHa?w=225&h=220&c=7&r=0&o=5&pid=1.7",
+                "Clear": "https://th.bing.com/th/id/OIP.0ku6JPMsh2UOP1pzv6OT-AHaHa?w=216&h=212&c=7&r=0&o=5&pid=1.7",
+                "Rain": "https://th.bing.com/th/id/OIP.6qFdFzm5eYvxt3ByU9hbwgHaHa?w=179&h=180&c=7&r=0&o=5&pid=1.7",
+                "Drizzle": "https://th.bing.com/th/id/OIP.e2fqnUvU5GsM8aHAw6YqpwHaHa?w=185&h=185&c=7&r=0&o=5&pid=1.7",
+                "Mist": "https://th.bing.com/th/id/OIP.CN1O-3qRvinduaxhkptGxQHaHa?w=189&h=189&c=7&r=0&o=5&pid=1.7",
+                "Smoke": "https://th.bing.com/th/id/OIP.CN1O-3qRvinduaxhkptGxQHaHa?w=189&h=189&c=7&r=0&o=5&pid=1.7",
+                "Haze": "https://th.bing.com/th/id/OIP.CN1O-3qRvinduaxhkptGxQHaHa?w=189&h=189&c=7&r=0&o=5&pid=1.7",
+                "Snow": "https://th.bing.com/th/id/OIP.r22tIgFaIoPJoKmd49RHRQHaHa?w=165&h=180&c=7&r=0&o=5&pid=1.7"
+            };
+            
+            weatherIcon.src = iconMap[weatherCondition] || iconMap["Clear"];
+            weatherIcon.alt = weatherCondition;
+            
+            // Hide loading, show weather
+            loadingDiv.style.display = "none";
+            errorDiv.style.display = "none";
+            weatherDiv.style.display = "block";
+            
+        } catch (error) {
+            loadingDiv.style.display = "none";
+            errorDiv.querySelector("p").textContent = "⚠️ Failed to fetch weather data. Please try again.";
+            errorDiv.style.display = "block";
+            weatherDiv.style.display = "none";
+            console.error("Error fetching weather:", error);
+        }
+    }
+
+    // Event listeners
+    searchbtn.addEventListener("click", () => {
+        checkWeather(searchbox.value);
+    });
+
+    searchbox.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            checkWeather(searchbox.value);
+        }
+    });
+
+    // Load default city on page load
+    window.addEventListener("load", () => {
+        checkWeather("London");
+    });
+
+</script>
+</body>
+</html>
